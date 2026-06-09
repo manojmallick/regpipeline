@@ -1,0 +1,12 @@
+node_modules
+npm-debug.log
+.env
+.env.*
+!.env.example
+.git
+.gitignore
+.DS_Store
+*.log
+docs
+stitch_regpipeline_data_intelligence_dashboard
+evals/live-proof.json

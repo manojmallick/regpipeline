@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(echo \"exit:$?\")",
+      "Bash(node -e \"const p=require\\('./node_modules/@getnao/fivetran-mcp-server/package.json'\\); console.log\\('name',p.name,'ver',p.version\\); console.log\\('bin',JSON.stringify\\(p.bin\\)\\); console.log\\('main',p.main\\); console.log\\('type',p.type\\);\")",
+      "Bash(grep -oE '`fivetran-[a-z-]+`' node_modules/@getnao/fivetran-mcp-server/README.md)",
+      "Bash(timeout 60 node /tmp/mcp-probe.mjs)",
+      "Bash(node /tmp/mcp-probe.mjs)",
+      "Bash(node ./_probe.mjs)",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('agent-builder/agent.json','utf8'\\)\\);console.log\\('valid JSON'\\)\")",
+      "Bash(node -e \"const d=require\\('./package.json'\\).dependencies;console.log\\(Object.entries\\(d\\).map\\(\\([k,v]\\)=>k+'@'+v\\).join\\('\\\\n'\\)\\)\")",
+      "Bash(docker --version)",
+      "Bash(docker build *)",
+      "Bash(open -a Docker)",
+      "Bash(node -e \"const l=require\\('./package-lock.json'\\);const want=['node_modules/@getnao/fivetran-mcp-server','node_modules/@modelcontextprotocol/sdk'];for\\(const w of want\\)console.log\\(\\(l.packages[w]?'✅ ':'❌ '\\)+w+\\(l.packages[w]?' @'+l.packages[w].version:' MISSING'\\)\\)\")",
+      "Bash(npm ls *)",
+      "Bash(docker rm *)",
+      "Bash(docker run *)",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\).on\\('end',\\(\\)=>{const j=JSON.parse\\(d\\);console.log\\('status',j.status,'| mode',j.mode,'| model',j.model,'| transport',j.partner_transport\\)}\\)\")",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\).on\\('end',\\(\\)=>{const j=JSON.parse\\(d\\);console.log\\('connectors',j.connectors.length,'items',j.digest.items.length,'reclass',j.reclassification.changed\\)}\\)\")",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\).on\\('end',\\(\\)=>{const j=JSON.parse\\(d\\);console.log\\('transport',j.partner_transport,'| partner_mcp_connected',j.partner_mcp_connected\\)}\\)\")",
+      "Bash(git init *)",
+      "Bash(grep -iE \"\\\\.env$|node_modules|live-proof|\\\\.DS_Store\")",
+      "Bash(git symbolic-ref *)",
+      "Bash(grep -E \"\\\\.env$\")"
+    ]
+  }
+}

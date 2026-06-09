@@ -1,0 +1,22 @@
+{
+  "_comment": "Google Cloud Agent Builder definition for the JUDGED RegPipeline agent: Gemini 3 + the real Fivetran MCP server (@getnao/fivetran-mcp-server) + BigQuery for the synced warehouse. Import via the Agent Builder console or gcloud (see README). The Express app in src/ invokes the SAME MCP server at runtime when FIVETRAN_USE_MCP=true (src/fivetran-mcp.js).",
+  "displayName": "RegPipeline",
+  "model": "gemini-3",
+  "description": "Daily regulatory-change monitor: checks Fivetran connector health, reads newly-synced regulatory documents (EUR-Lex, EBA, ESMA, DNB, FIFA) from BigQuery, scores their compliance impact, drafts a daily digest, and proposes resyncing delayed connectors + sending the digest, gated on human approval.",
+  "instruction": "You are RegPipeline. Each morning: (1) use the fivetran tool to list connectors and check sync health and schema changes; (2) read the regulatory documents synced in the last 24h from BigQuery; (3) for each document assign HIGH/MEDIUM/LOW compliance impact, name the affected articles (DORA/NIS2/GDPR/EU AI Act), and the action + deadline; (4) identify delayed/broken connectors to resync and downstream queries affected by schema changes; (5) do NOT trigger any resync or send the digest until the human approves — present the digest and the proposed actions and wait.",
+  "tools": [
+    {
+      "type": "mcp",
+      "mcpServer": {
+        "command": "npx",
+        "args": ["-y", "@getnao/fivetran-mcp-server@latest"],
+        "env": { "FIVETRAN_BASE_64_API_KEY": "${FIVETRAN_BASE_64_API_KEY}" }
+      },
+      "exposedTools": ["fivetran-list-connections", "fivetran-get-connection-details", "fivetran-get-connection-state", "fivetran-modify-connection-state"]
+    }
+  ],
+  "humanInTheLoop": {
+    "requireApprovalFor": ["fivetran-modify-connection-state"],
+    "_comment": "Resyncs and digest delivery pause for human approval — maps to the UI ApprovalBar and the 'keep you in control' rule."
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "description": "Golden retroactive re-classification cases for RegPipeline. The diff/classify logic in src/diff.js is deterministic, so these produce a real accuracy number. Thresholds: v1 clients>10%/>120min; v2 clients>8%/>90min (value/payments unchanged).",
+  "cases": [
+    { "name": "9% for 100min — flips MINOR→MAJOR under v2", "incident": { "incident_id": "A", "clients_affected_pct": 9, "duration_min": 100 }, "expect_was": "MINOR", "expect_now": "MAJOR" },
+    { "name": "12% for 95min — MINOR under v1 (95<120min), flips MAJOR under v2", "incident": { "incident_id": "B", "clients_affected_pct": 12, "duration_min": 95 }, "expect_was": "MINOR", "expect_now": "MAJOR" },
+    { "name": "6% for 200min — below client% both — stays MINOR", "incident": { "incident_id": "C", "clients_affected_pct": 6, "duration_min": 200 }, "expect_was": "MINOR", "expect_now": "MINOR" },
+    { "name": "9% for 130min — flips MINOR→MAJOR", "incident": { "incident_id": "D", "clients_affected_pct": 9, "duration_min": 130 }, "expect_was": "MINOR", "expect_now": "MAJOR" },
+    { "name": "High value — MAJOR under both (value unchanged)", "incident": { "incident_id": "E", "transaction_value_eur": 8300000, "clients_affected_pct": 2, "duration_min": 10 }, "expect_was": "MAJOR", "expect_now": "MAJOR" },
+    { "name": "8% exactly for 100min — not >8%, stays MINOR", "incident": { "incident_id": "F", "clients_affected_pct": 8, "duration_min": 100 }, "expect_was": "MINOR", "expect_now": "MINOR" },
+    { "name": "9% for 80min — below v2 duration, stays MINOR", "incident": { "incident_id": "G", "clients_affected_pct": 9, "duration_min": 80 }, "expect_was": "MINOR", "expect_now": "MINOR" }
+  ]
+}

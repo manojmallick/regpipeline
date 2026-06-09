@@ -1,0 +1,103 @@
+<!doctype html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>RegPipeline — Regulatory Data Intelligence</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<style>
+  body{background-color:#080C14;color:#dbe2f9;font-family:'Inter',sans-serif}
+  .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;line-height:1;vertical-align:middle}
+  .glass-card{background:#101828;border:1px solid #1C2C42;transition:all .2s ease-in-out}
+  .glass-card:hover{border-color:#0073E6;box-shadow:0 0 15px rgba(0,115,230,.1)}
+  .glow-pulse{box-shadow:0 0 8px rgba(34,197,94,.4);animation:pulse 2s infinite}
+  @keyframes pulse{0%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(1.1)}100%{opacity:1;transform:scale(1)}}
+  .asymmetric-grid{display:grid;grid-template-columns:2fr 1fr;gap:24px}
+  @media(max-width:1024px){.asymmetric-grid{grid-template-columns:1fr}}
+  .fade-in{animation:fade .4s ease both}@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .spin{animation:sp 1s linear infinite}@keyframes sp{to{transform:rotate(360deg)}}
+  ::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-thumb{background:#2d3546;border-radius:8px}
+</style>
+<script id="tailwind-config">
+tailwind.config={darkMode:"class",theme:{extend:{
+  colors:{"surface-container-high":"#222a3b","on-primary":"#002f65","primary-fixed-dim":"#abc7ff","on-tertiary-fixed-variant":"#38485f","tertiary-container":"#677790","error-container":"#93000a","tertiary-fixed":"#d4e3ff","surface":"#0b1323","surface-container-low":"#141b2c","primary-fixed":"#d7e3ff","outline":"#8b919f","on-primary-fixed-variant":"#00458f","on-error-container":"#ffdad6","tertiary-fixed-dim":"#b7c7e4","on-surface-variant":"#c1c6d6","surface-container":"#182030","error":"#ffb4ab","on-tertiary-container":"#ffffff","tertiary":"#b7c7e4","surface-dim":"#0b1323","on-secondary-fixed-variant":"#004494","inverse-primary":"#005cbb","primary":"#abc7ff","on-primary-fixed":"#001b3f","on-surface":"#dbe2f9","background":"#0b1323","secondary-fixed":"#d8e2ff","secondary-container":"#0162cf","on-secondary":"#002e69","surface-bright":"#31394b","on-background":"#dbe2f9","primary-container":"#0073e6","on-secondary-fixed":"#001a41","surface-variant":"#2d3546","outline-variant":"#414754","surface-tint":"#abc7ff","on-primary-container":"#fffeff","surface-container-lowest":"#060e1e","inverse-on-surface":"#293041","secondary-fixed-dim":"#adc6ff","inverse-surface":"#dbe2f9","on-error":"#690005","on-secondary-container":"#dae4ff","on-tertiary":"#213147","secondary":"#adc6ff","surface-container-highest":"#2d3546","on-tertiary-fixed":"#0b1c31"},
+  borderRadius:{DEFAULT:"0.125rem",lg:"0.25rem",xl:"0.5rem",full:"0.75rem"},
+  spacing:{"margin-desktop":"32px",base:"4px",sm:"8px","margin-mobile":"16px",xs:"4px",gutter:"20px",xl:"32px",lg:"24px",md:"16px"},
+  fontFamily:{"mono-data":["JetBrains Mono"],sans:["Inter"]},
+  fontSize:{"mono-data":["13px",{lineHeight:"20px",fontWeight:"400"}],"body-md":["14px",{lineHeight:"20px"}],"body-lg":["16px",{lineHeight:"24px"}],"body-sm":["12px",{lineHeight:"18px"}],"headline-lg":["32px",{lineHeight:"40px",letterSpacing:"-0.02em",fontWeight:"600"}],"headline-md":["24px",{lineHeight:"32px",letterSpacing:"-0.01em",fontWeight:"600"}],"headline-sm":["20px",{lineHeight:"28px",fontWeight:"600"}],"label-md":["12px",{lineHeight:"16px",letterSpacing:"0.05em",fontWeight:"600"}]}
+}}}
+</script>
+</head>
+<body class="flex min-h-screen">
+
+<!-- Sidebar -->
+<aside class="hidden md:flex flex-col h-screen py-lg space-y-md bg-surface-container border-r border-outline-variant w-64 fixed left-0 top-0 z-50">
+  <div class="px-md mb-xl">
+    <h1 class="text-headline-sm font-black text-primary">RegPipeline</h1>
+    <p class="text-label-md text-on-surface-variant opacity-70">Data Intelligence</p>
+  </div>
+  <nav class="flex-1 space-y-1 px-2" id="sideNav">
+    <button data-nav="health" class="side-btn w-full flex items-center px-md py-sm group"><span class="material-symbols-outlined mr-md">dashboard</span><span class="text-label-md">Dashboard</span></button>
+    <button data-nav="impact" class="side-btn w-full flex items-center px-md py-sm group"><span class="material-symbols-outlined mr-md">analytics</span><span class="text-label-md">Analytics</span></button>
+    <button data-nav="history" class="side-btn w-full flex items-center px-md py-sm group"><span class="material-symbols-outlined mr-md">history</span><span class="text-label-md">Logs</span></button>
+    <button class="side-btn w-full flex items-center px-md py-sm text-on-surface-variant" disabled><span class="material-symbols-outlined mr-md">settings</span><span class="text-label-md">Settings</span></button>
+  </nav>
+  <div class="px-md mt-auto space-y-md">
+    <button id="refreshBtn" class="w-full py-sm bg-primary text-on-primary font-bold rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
+      <span class="material-symbols-outlined text-[18px]" id="refreshIcon">sync</span> Refresh Pipeline
+    </button>
+    <div class="pt-md border-t border-outline-variant space-y-1">
+      <a class="flex items-center px-sm py-xs text-on-surface-variant hover:text-on-surface text-label-md" href="/health"><span class="material-symbols-outlined mr-md text-[18px]">help</span> Health JSON</a>
+      <a class="flex items-center px-sm py-xs text-on-surface-variant hover:text-on-surface text-label-md" href="#"><span class="material-symbols-outlined mr-md text-[18px]">logout</span> Sign Out</a>
+    </div>
+  </div>
+</aside>
+
+<main class="flex-1 md:ml-64 flex flex-col min-w-0">
+  <!-- Top header -->
+  <header class="flex justify-between items-center w-full px-margin-desktop h-16 bg-surface border-b border-outline-variant sticky top-0 z-40">
+    <div class="flex items-center gap-xl">
+      <span class="text-headline-md font-bold text-on-surface" id="topTitle">Health</span>
+      <nav class="hidden lg:flex items-center gap-lg" id="topNav">
+        <button data-nav="health" class="top-btn text-body-md pb-1">Health</button>
+        <button data-nav="impact" class="top-btn text-body-md pb-1">Impact</button>
+        <button data-nav="history" class="top-btn text-body-md pb-1">History</button>
+      </nav>
+    </div>
+    <div class="flex items-center gap-md">
+      <div class="hidden sm:flex items-center gap-xs px-sm py-1 bg-surface-container-high rounded-full border border-outline-variant">
+        <span class="material-symbols-outlined text-sm text-primary">search</span>
+        <input class="bg-transparent border-none focus:ring-0 text-body-sm w-32 text-on-surface" placeholder="Search logs..."/>
+      </div>
+      <button id="triggerSyncBtn" class="px-md py-1.5 bg-primary-container text-on-primary-container rounded font-label-md hover:brightness-110 active:scale-95 transition-all">Trigger Sync</button>
+      <span id="healthDot" class="w-2 h-2 rounded-full bg-outline" title="checking…"></span>
+      <button class="material-symbols-outlined p-xs text-on-surface-variant hover:bg-surface-container-high rounded">notifications</button>
+      <div class="h-8 w-8 rounded-full bg-surface-container-highest border border-outline-variant flex items-center justify-center text-primary"><span class="material-symbols-outlined text-[20px]">person</span></div>
+    </div>
+  </header>
+
+  <div class="p-margin-desktop pb-32 space-y-xl max-w-[1400px] mx-auto w-full" id="canvas">
+    <section id="view-health"></section>
+    <section id="view-impact" class="hidden"></section>
+    <section id="view-history" class="hidden"></section>
+  </div>
+</main>
+
+<!-- Approval bar (Run Now → human-gated execute) -->
+<div id="approval" class="hidden fixed left-0 right-0 bottom-0 z-50 bg-surface-container border-t border-primary/30 px-margin-desktop py-md md:pl-[calc(16rem+32px)]">
+  <div class="max-w-[1400px] mx-auto flex items-center gap-md">
+    <span class="material-symbols-outlined text-primary glow-pulse rounded-full">bolt</span>
+    <div class="flex-1 min-w-0">
+      <p class="font-bold text-on-surface truncate" id="apTitle"></p>
+      <p class="text-body-sm text-on-surface-variant font-mono-data truncate" id="apTools"></p>
+    </div>
+    <button onclick="hideApproval()" class="px-md py-sm border border-outline-variant text-on-surface-variant rounded text-label-md hover:bg-surface-variant">Reject</button>
+    <button onclick="approve()" class="px-lg py-sm bg-primary-container text-on-primary-container font-bold rounded text-label-md hover:brightness-110 flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">check</span>Approve &amp; Run</button>
+  </div>
+</div>
+
+<script src="/app.js"></script>
+</body>
+</html>

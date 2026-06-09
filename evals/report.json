@@ -1,0 +1,66 @@
+{
+  "ran_at": "2026-06-09T09:49:21.422Z",
+  "target": 1,
+  "total": 7,
+  "correct": 7,
+  "accuracy": 1,
+  "flips": 3,
+  "rows": [
+    {
+      "name": "9% for 100min — flips MINOR→MAJOR under v2",
+      "was": "MINOR",
+      "now": "MAJOR",
+      "expect_was": "MINOR",
+      "expect_now": "MAJOR",
+      "ok": true
+    },
+    {
+      "name": "12% for 95min — MINOR under v1 (95<120min), flips MAJOR under v2",
+      "was": "MINOR",
+      "now": "MAJOR",
+      "expect_was": "MINOR",
+      "expect_now": "MAJOR",
+      "ok": true
+    },
+    {
+      "name": "6% for 200min — below client% both — stays MINOR",
+      "was": "MINOR",
+      "now": "MINOR",
+      "expect_was": "MINOR",
+      "expect_now": "MINOR",
+      "ok": true
+    },
+    {
+      "name": "9% for 130min — flips MINOR→MAJOR",
+      "was": "MINOR",
+      "now": "MAJOR",
+      "expect_was": "MINOR",
+      "expect_now": "MAJOR",
+      "ok": true
+    },
+    {
+      "name": "High value — MAJOR under both (value unchanged)",
+      "was": "MAJOR",
+      "now": "MAJOR",
+      "expect_was": "MAJOR",
+      "expect_now": "MAJOR",
+      "ok": true
+    },
+    {
+      "name": "8% exactly for 100min — not >8%, stays MINOR",
+      "was": "MINOR",
+      "now": "MINOR",
+      "expect_was": "MINOR",
+      "expect_now": "MINOR",
+      "ok": true
+    },
+    {
+      "name": "9% for 80min — below v2 duration, stays MINOR",
+      "was": "MINOR",
+      "now": "MINOR",
+      "expect_was": "MINOR",
+      "expect_now": "MINOR",
+      "ok": true
+    }
+  ]
+}
