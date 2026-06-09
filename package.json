@@ -12,7 +12,8 @@
     "demo": "MOCK=true node --watch src/server.js",
     "start": "node src/server.js",
     "eval": "node scripts/eval.js",
-    "smoke": "node scripts/smoke-live.mjs"
+    "smoke": "node scripts/smoke-live.mjs",
+    "mcp:selftest": "node scripts/mcp-selftest.mjs"
   },
   "dependencies": {
     "@getnao/fivetran-mcp-server": "^1.4.2",
