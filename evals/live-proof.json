@@ -1,0 +1,94 @@
+{
+  "ran_at": "2026-06-10T09:54:51.843Z",
+  "base": "https://regpipeline-908307939543.us-central1.run.app",
+  "elapsed_ms": 9700,
+  "health": {
+    "status": "ok",
+    "service": "regpipeline",
+    "version": "2.0.0",
+    "mode": "live",
+    "model": "gemini-2.5-flash",
+    "partner": "fivetran",
+    "partner_transport": "mcp",
+    "partner_connected": true,
+    "partner_mcp_connected": true,
+    "bigquery_connected": true,
+    "agents": [
+      "PipelineMonitor",
+      "RegulatoryAnalyst"
+    ],
+    "sources": [
+      "EUR-Lex",
+      "EBA",
+      "ESMA",
+      "DNB",
+      "FIFA"
+    ],
+    "features": [
+      "regulatory_diff",
+      "retroactive_reclassification",
+      "change_to_tasks",
+      "obligation_ledger",
+      "sync_history"
+    ],
+    "timestamp": "2026-06-10T09:54:42.734Z"
+  },
+  "daily_run_summary": {
+    "connectors": [
+      {
+        "service": "google_ads",
+        "failed": true
+      }
+    ],
+    "digest_items": [
+      {
+        "source": "eurlex",
+        "impact": "HIGH",
+        "affects": "DORA"
+      },
+      {
+        "source": "eba",
+        "impact": "MEDIUM",
+        "affects": "DORA"
+      },
+      {
+        "source": "fifa",
+        "impact": "LOW",
+        "affects": ""
+      }
+    ],
+    "proposedAction": {
+      "type": "resync_send_track",
+      "description": "resync 1 connector(s) + send digest + save 2 remediation task(s) + flag 3 re-classified incident(s) (1 HIGH-impact)",
+      "tools": [
+        "fivetran.trigger_sync × 1",
+        "notify.send_digest",
+        "bigquery.insert(obligations)",
+        "bigquery.insert(audit_log)"
+      ]
+    },
+    "steps": [
+      {
+        "agent": "PipelineMonitor",
+        "action": "1 connectors · 1 delayed · 0 schema changes",
+        "ms": 1931
+      },
+      {
+        "agent": "PipelineMonitor",
+        "action": "3 new regulatory documents (24h)",
+        "ms": 2955
+      },
+      {
+        "agent": "RegulatoryAnalyst",
+        "action": "gemini-2.5-flash scored impact + drafted digest",
+        "ms": 8490
+      },
+      {
+        "agent": "RegulatoryAnalyst",
+        "action": "re-classified 5 incidents → 3 now MAJOR",
+        "ms": 8891
+      }
+    ]
+  },
+  "passed": true
+}

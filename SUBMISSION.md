@@ -11,15 +11,16 @@ Everything the judges' checklist needs, as copy-paste steps. Deadline: **June 11
 | Git repo + first commit | ✅ Done (local) | `main` branch, MIT `LICENSE` at root. **Push below.** |
 | New-project window | ✅ Provable | First commit dated within the contest window. |
 | Public repo (About shows license) | ✅ Done | https://github.com/manojmallick/regpipeline (MIT shown in About). |
-| Hosted URL | ✅ Live (interim demo) | https://regpipeline-908307939543.us-central1.run.app — flip to LIVE per "Upgrade to LIVE" below. |
+| Hosted URL | ✅ LIVE (real stack) | https://regpipeline-908307939543.us-central1.run.app — genuinely calls Gemini + Fivetran MCP + BigQuery at runtime (`npm run smoke` → 10/10, `evals/live-proof.json`). |
 | Demo video < 3 min | ⬜ You | Record using `DEMO.md` script (shot list below). |
 | Agent Builder agent imported | ⬜ You | Import `agent-builder/agent.json` (below). |
 | Partner track | ✅ | Fivetran. |
 
-## Upgrade the live URL from demo → LIVE (genuine runtime invocation)
+## ✅ The live URL already runs the real stack
 
-The hosted URL is up in demo mode. To make the **same URL** genuinely call Gemini + the Fivetran
-MCP + BigQuery at runtime (what the rules want), do this — only your Fivetran key/secret is missing:
+This is **done** — the hosted URL above genuinely calls Gemini (`gemini-2.5-flash`) + the Fivetran
+MCP + BigQuery at runtime (verified: `npm run smoke` → 10/10). The commands below are kept only as
+the reproducible recipe used to deploy it (Fivetran creds come from your local, gitignored `.env`):
 
 ```bash
 # 1. Put your Fivetran creds in a local .env (NOT committed — .env is gitignored):

@@ -18,7 +18,25 @@ import { THRESHOLDS_V1, THRESHOLDS_V2, diffThresholds, reclassify, changeToTasks
 
 const MODEL = process.env.GEMINI_MODEL || "gemini-3";
 const REGQUERY_URL = process.env.REGQUERY_URL; // optional: push changed articles downstream
-const ai = new GoogleGenAI({ vertexai: true });
+// Vertex needs the project explicitly (Cloud Run does not inject GOOGLE_CLOUD_PROJECT the way
+// the BigQuery client auto-detects it from the metadata server).
+const ai = new GoogleGenAI({
+  vertexai: true,
+  project: process.env.GOOGLE_CLOUD_PROJECT,
+  location: process.env.GOOGLE_CLOUD_LOCATION || "us-central1",
+});
+
+/** Tolerant JSON extraction — strips ```json fences and grabs the outer {...} so a stray
+ *  prefix/suffix from the model can't blank the digest. Returns null if unparseable. */
+function parseJsonLoose(text) {
+  if (text == null) return null;
+  let t = String(text).trim();
+  const fence = t.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  if (fence) t = fence[1].trim();
+  const s = t.indexOf("{"), e = t.lastIndexOf("}");
+  if (s >= 0 && e > s) t = t.slice(s, e + 1);
+  try { return JSON.parse(t); } catch { return null; }
+}
 
 const DIGEST_SYSTEM = `You are RegPipeline, a regulatory-change analyst for an EU financial
 entity. Given newly-published regulatory documents and pipeline health, produce a daily
@@ -49,11 +67,19 @@ export async function dailyRun() {
   if (docs.length) {
     const res = await ai.models.generateContent({
       model: MODEL,
-      config: { systemInstruction: DIGEST_SYSTEM, responseMimeType: "application/json" },
+      config: {
+        systemInstruction: DIGEST_SYSTEM,
+        responseMimeType: "application/json",
+        temperature: 0.2,
+        maxOutputTokens: 4096,
+        // gemini-2.5-flash "thinking" can consume the output budget and truncate JSON; disable it.
+        thinkingConfig: { thinkingBudget: 0 },
+      },
       contents: `NEW DOCUMENTS:\n${JSON.stringify(docs, null, 2)}\n\nPIPELINE HEALTH:\n${JSON.stringify({ delayed, schemaChanges }, null, 2)}`,
     });
-    try { digest = JSON.parse(res.text); } catch { digest = { items: [], summary: res.text }; }
-    steps.push({ agent: "RegulatoryAnalyst", action: "Gemini 3 scored impact + drafted digest", ms: Date.now() - t0 });
+    const parsed = parseJsonLoose(res.text);
+    digest = parsed && Array.isArray(parsed.items) ? parsed : { items: [], summary: String(res.text || "").slice(0, 400) || "Digest unavailable." };
+    steps.push({ agent: "RegulatoryAnalyst", action: `${MODEL} scored impact + drafted digest`, ms: Date.now() - t0 });
   }
 
   // --- Retroactive re-classification when a threshold change is detected ---

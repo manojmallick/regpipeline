@@ -1,6 +1,6 @@
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
-let runData=null, diffData=null, pending=null;
+let runData=null, diffData=null, pending=null, healthInfo={};
 
 // ---------- navigation ----------
 function paintNav(view){
@@ -210,7 +210,7 @@ function renderImpact(diff){
       <div class="bg-[#101828] border border-[#1C2C42] rounded-xl overflow-hidden">
         <div class="px-lg py-md border-b border-[#1C2C42] flex items-center justify-between">
           <div class="flex items-center gap-sm"><span class="material-symbols-outlined text-primary" style="font-variation-settings:'FILL' 1">auto_awesome</span><h3 class="text-headline-sm">Gemini Analysis</h3></div>
-          <span class="text-label-md text-on-surface-variant">Model: Gemini 3</span></div>
+          <span class="text-label-md text-on-surface-variant">Model: ${esc(healthInfo.model||"Gemini 3")}</span></div>
         <div class="p-lg space-y-xl">
           <div><h4 class="text-label-md text-primary uppercase mb-md">Legal Context</h4><div class="flex gap-sm flex-wrap">${articles}</div></div>
           <div><h4 class="text-label-md text-primary uppercase mb-md">Threshold Changes</h4><div class="grid grid-cols-1 md:grid-cols-2 gap-md">${changes||'<p class="text-on-surface-variant text-body-sm">No numeric threshold changes.</p>'}</div></div>
@@ -339,11 +339,93 @@ function renderHistory(h){
 }
 
 // ---------- health badge ----------
-(async()=>{try{const h=await(await fetch("/health")).json();
+(async()=>{try{const h=await(await fetch("/health")).json(); healthInfo=h;
   $("#healthDot").className="w-2 h-2 rounded-full "+(h.status==="ok"?"bg-green-500 glow-pulse":"bg-error");
   $("#healthDot").title=`${h.service} · ${h.model} · bq:${h.bigquery_connected} · fivetran:${h.partner_mcp_connected}`;
 }catch{$("#healthDot").className="w-2 h-2 rounded-full bg-error";}})();
 
+// ---------- modal (Settings / Notifications) ----------
+function openModal(html){ $("#modalBody").innerHTML=html; $("#modal").classList.remove("hidden"); }
+function closeModal(){ $("#modal").classList.add("hidden"); }
+const kv=(k,v)=>`<div class="flex justify-between gap-md border-b border-outline-variant/30 py-xs"><span class="text-on-surface-variant">${esc(k)}</span><span class="text-on-surface text-right">${esc(v??"—")}</span></div>`;
+async function showSettings(){
+  let h=healthInfo; try{ h=await (await fetch("/health")).json(); healthInfo=h; }catch{}
+  openModal(`<div class="flex items-center justify-between mb-lg"><h3 class="text-headline-sm flex items-center gap-sm"><span class="material-symbols-outlined text-primary">settings</span>System · Live Stack</h3><button onclick="closeModal()" class="material-symbols-outlined text-on-surface-variant hover:text-on-surface">close</button></div>
+    <div class="space-y-1 font-mono-data text-body-sm">
+      ${kv("Service",h.service)}${kv("Mode",h.mode)}${kv("Model (Gemini)",h.model)}
+      ${kv("Partner",h.partner)}${kv("Transport",h.partner_transport)}
+      ${kv("Fivetran MCP",h.partner_mcp_connected?"connected ✅":"not via MCP")}
+      ${kv("BigQuery",h.bigquery_connected?"connected ✅":"—")}
+      ${kv("Agents",(h.agents||[]).join(", "))}${kv("Sources",(h.sources||[]).join(", "))}
+    </div>
+    <div class="mt-lg flex flex-wrap gap-sm"><a href="/health" target="_blank" class="px-md py-sm bg-primary-container text-on-primary-container rounded text-label-md font-bold">Open /health JSON</a>
+      <button onclick="closeModal();startTour()" class="px-md py-sm border border-primary/40 text-primary rounded text-label-md font-bold flex items-center gap-1"><span class="material-symbols-outlined text-[18px]">tour</span>Start Judge Tour</button></div>`);
+}
+function showNotifications(){
+  const d=runData||{}, items=[];
+  (d.delayed||[]).forEach(c=>items.push(["error","error","Connector delayed: "+esc((c.service||c.id||"").toUpperCase())]));
+  (d.schemaChanges||[]).forEach(c=>items.push(["yellow-500","schema","Schema change on "+esc((c.service||c.id||"").toUpperCase())+" — downstream queries affected"]));
+  (d.digest?.items||[]).filter(i=>i.impact==="HIGH").forEach(i=>items.push(["error","priority_high","HIGH impact: "+esc(i.title)]));
+  if(!items.length) items.push(["green-500","check_circle","All clear — no active alerts."]);
+  openModal(`<div class="flex items-center justify-between mb-lg"><h3 class="text-headline-sm flex items-center gap-sm"><span class="material-symbols-outlined text-primary">notifications</span>Notifications</h3><button onclick="closeModal()" class="material-symbols-outlined text-on-surface-variant hover:text-on-surface">close</button></div>
+    <div class="space-y-sm">${items.map(([c,ic,t])=>`<div class="flex items-center gap-md p-md bg-surface-container-low rounded border border-outline-variant/30"><span class="material-symbols-outlined text-${c}">${ic}</span><span class="text-body-md">${t}</span></div>`).join("")}</div>`);
+}
+// search → jump to History and filter execution-log rows
+$("#searchInput")&&$("#searchInput").addEventListener("keydown",e=>{ if(e.key!=="Enter")return;
+  const q=e.target.value.trim().toLowerCase(); show("history");
+  setTimeout(()=>{ let n=0; document.querySelectorAll("#view-history tbody tr").forEach(tr=>{const m=!q||tr.textContent.toLowerCase().includes(q);tr.style.display=m?"":"none";if(m)n++;}); toast(q?`Filtered logs for “${e.target.value.trim()}” — ${n} row(s)`:"Filter cleared"); },450);
+});
+// remaining controls
+document.querySelectorAll('[data-action="settings"]').forEach(b=>b.onclick=showSettings);
+document.querySelectorAll('[data-action="signout"]').forEach(b=>b.onclick=()=>toast("Demo build — authentication is out of scope for the hackathon."));
+$("#notifBtn")&&($("#notifBtn").onclick=showNotifications);
+$("#avatarBtn")&&($("#avatarBtn").onclick=()=>toast("Signed in as Compliance Analyst · demo workspace"));
+document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ closeModal(); if(!$("#tour").classList.contains("hidden")) endTour(); }});
+
+// ---------- Judge guided tour ----------
+const TOUR=[
+  {nav:"health", sel:"#view-health h2, #view-health", title:"Pipeline Health", body:"RegPipeline watches 5 regulatory sources (EUR-Lex, EBA, ESMA, DNB, FIFA) that <b>Fivetran</b> syncs into <b>BigQuery</b>. This is the morning health view."},
+  {nav:"health", sel:"#view-health .border-yellow-500\\/50", fallback:"#view-health", title:"Connector + schema alert", body:"It flags a delayed connector and a detected <b>schema change</b>, and traces the downstream impact — one query broken, one view stale. Data-ops awareness, automatically."},
+  {nav:"health", sel:"#refreshBtn", title:"Run the agent", body:"Press <b>Run ▶</b> below. The agent checks connector health through the <b>Fivetran MCP</b>, reads new documents from <b>BigQuery</b>, and <b>Gemini</b> scores each one’s compliance impact.", action:async()=>{ await runPipeline(); }},
+  {nav:"health", sel:"#approval", title:"Human-in-the-loop", body:"The agent does <b>not</b> act on its own. It proposes — resync the connector, send the digest, save tasks — and waits for your approval.", before:()=>{ if(runData&&runData.proposedAction) $("#approval").classList.remove("hidden"); }},
+  {nav:"impact", sel:"#view-impact h2, #view-impact", title:"The payoff — Impact", body:"A delegated act tightened the DORA major-incident threshold (10%→8%, 2.0h→1.5h). Gemini <b>retroactively re-classifies history</b> — showing exactly which past incidents would now be MAJOR."},
+  {nav:"history", sel:"#view-history h1, #view-history", title:"Sync telemetry", body:"Full per-connector sync history — availability matrix, cadence, volume, and execution logs with the schema change captured inline."},
+  {nav:"health", sel:null, title:"That’s RegPipeline ✅", body:"<b>Gemini + Agent Builder + the real Fivetran MCP.</b> Zero manual monitoring hours; new regulations surfaced in ~6h instead of days — and a human always approves the consequential step."},
+];
+let tourIx=0;
+function startTour(){ tourIx=0; $("#tour").classList.remove("hidden"); renderTourStep(); }
+function endTour(){ $("#tour").classList.add("hidden"); clearTourRing(); }
+function clearTourRing(){ document.querySelectorAll(".tour-ring").forEach(e=>e.classList.remove("tour-ring")); }
+async function renderTourStep(){
+  const s=TOUR[tourIx]; clearTourRing();
+  if(s.nav) show(s.nav);
+  if(s.before){ try{ s.before(); }catch{} }
+  await new Promise(r=>setTimeout(r,280)); // let the view paint
+  let tgt=null; for(const sel of [s.sel,s.fallback]){ if(!sel)continue; try{ tgt=document.querySelector(sel); }catch{} if(tgt)break; }
+  if(tgt){ tgt.classList.add("tour-ring"); tgt.scrollIntoView({behavior:"smooth",block:"center"}); }
+  const last=tourIx===TOUR.length-1;
+  $("#tourCard").innerHTML=`
+    <div class="flex items-center justify-between mb-sm"><span class="text-label-md text-primary uppercase tracking-widest">Judge Tour · ${tourIx+1}/${TOUR.length}</span>
+      <button onclick="endTour()" class="material-symbols-outlined text-on-surface-variant hover:text-on-surface text-[20px]">close</button></div>
+    <h3 class="text-headline-sm mb-sm">${s.title}</h3>
+    <p class="text-body-md text-on-surface-variant mb-lg leading-relaxed">${s.body}</p>
+    <div class="flex items-center justify-between gap-sm">
+      <button onclick="tourPrev()" class="px-md py-sm text-on-surface-variant text-label-md hover:text-on-surface ${tourIx===0?'opacity-30 pointer-events-none':''}">Back</button>
+      <div class="flex gap-1">${TOUR.map((_,i)=>`<span class="w-1.5 h-1.5 rounded-full ${i===tourIx?'bg-primary':'bg-outline-variant'}"></span>`).join("")}</div>
+      <button id="tourNextBtn" onclick="tourNext()" class="px-lg py-sm bg-primary text-on-primary font-bold rounded text-label-md hover:brightness-110 flex items-center gap-1">${last?'Finish':(s.action?'Run ▶':'Next')}</button>
+    </div>`;
+}
+async function tourNext(){
+  const s=TOUR[tourIx];
+  if(s.action){ const b=$("#tourNextBtn"); if(b){b.textContent="Running…";b.classList.add("opacity-70","pointer-events-none");} try{ await s.action(); }catch{} }
+  if(tourIx>=TOUR.length-1){ endTour(); toast("Tour complete — thanks for reviewing RegPipeline!"); return; }
+  tourIx++; renderTourStep();
+}
+function tourPrev(){ if(tourIx>0){ tourIx--; renderTourStep(); } }
+$("#tourBtn")&&($("#tourBtn").onclick=startTour);
+
 // ---------- boot ----------
 const start=(location.hash||"#health").slice(1);
 runPipeline().then(()=>show(["health","impact","history"].includes(start)?start:"health"));
+// first-visit hint to launch the tour
+if(!location.hash) setTimeout(()=>{ if($("#tour").classList.contains("hidden")) toast("👋 New here? Click “Judge Tour” for a 60-second guided walkthrough."); },1200);

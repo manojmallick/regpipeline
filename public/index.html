@@ -19,6 +19,7 @@
   .fade-in{animation:fade .4s ease both}@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
   .spin{animation:sp 1s linear infinite}@keyframes sp{to{transform:rotate(360deg)}}
   ::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-thumb{background:#2d3546;border-radius:8px}
+  .tour-ring{position:relative;z-index:75;outline:3px solid #0073E6;outline-offset:4px;border-radius:8px;box-shadow:0 0 0 9999px rgba(4,8,16,.55);transition:box-shadow .2s ease}
 </style>
 <script id="tailwind-config">
 tailwind.config={darkMode:"class",theme:{extend:{
@@ -42,15 +43,15 @@ tailwind.config={darkMode:"class",theme:{extend:{
     <button data-nav="health" class="side-btn w-full flex items-center px-md py-sm group"><span class="material-symbols-outlined mr-md">dashboard</span><span class="text-label-md">Dashboard</span></button>
     <button data-nav="impact" class="side-btn w-full flex items-center px-md py-sm group"><span class="material-symbols-outlined mr-md">analytics</span><span class="text-label-md">Analytics</span></button>
     <button data-nav="history" class="side-btn w-full flex items-center px-md py-sm group"><span class="material-symbols-outlined mr-md">history</span><span class="text-label-md">Logs</span></button>
-    <button class="side-btn w-full flex items-center px-md py-sm text-on-surface-variant" disabled><span class="material-symbols-outlined mr-md">settings</span><span class="text-label-md">Settings</span></button>
+    <button data-action="settings" class="side-btn w-full flex items-center px-md py-sm text-on-surface-variant hover:bg-surface-variant/50 transition-all"><span class="material-symbols-outlined mr-md">settings</span><span class="text-label-md">Settings</span></button>
   </nav>
   <div class="px-md mt-auto space-y-md">
     <button id="refreshBtn" class="w-full py-sm bg-primary text-on-primary font-bold rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
       <span class="material-symbols-outlined text-[18px]" id="refreshIcon">sync</span> Refresh Pipeline
     </button>
     <div class="pt-md border-t border-outline-variant space-y-1">
-      <a class="flex items-center px-sm py-xs text-on-surface-variant hover:text-on-surface text-label-md" href="/health"><span class="material-symbols-outlined mr-md text-[18px]">help</span> Health JSON</a>
-      <a class="flex items-center px-sm py-xs text-on-surface-variant hover:text-on-surface text-label-md" href="#"><span class="material-symbols-outlined mr-md text-[18px]">logout</span> Sign Out</a>
+      <a class="flex items-center px-sm py-xs text-on-surface-variant hover:text-on-surface text-label-md" href="/health" target="_blank"><span class="material-symbols-outlined mr-md text-[18px]">help</span> Health JSON</a>
+      <a data-action="signout" class="flex items-center px-sm py-xs text-on-surface-variant hover:text-on-surface text-label-md cursor-pointer"><span class="material-symbols-outlined mr-md text-[18px]">logout</span> Sign Out</a>
     </div>
   </div>
 </aside>
@@ -69,12 +70,13 @@ tailwind.config={darkMode:"class",theme:{extend:{
     <div class="flex items-center gap-md">
       <div class="hidden sm:flex items-center gap-xs px-sm py-1 bg-surface-container-high rounded-full border border-outline-variant">
         <span class="material-symbols-outlined text-sm text-primary">search</span>
-        <input class="bg-transparent border-none focus:ring-0 text-body-sm w-32 text-on-surface" placeholder="Search logs..."/>
+        <input id="searchInput" class="bg-transparent border-none focus:ring-0 text-body-sm w-32 text-on-surface" placeholder="Search logs…"/>
       </div>
+      <button id="tourBtn" class="px-md py-1.5 bg-primary text-on-primary rounded font-label-md hover:brightness-110 active:scale-95 transition-all flex items-center gap-1"><span class="material-symbols-outlined text-[18px]">tour</span>Judge Tour</button>
       <button id="triggerSyncBtn" class="px-md py-1.5 bg-primary-container text-on-primary-container rounded font-label-md hover:brightness-110 active:scale-95 transition-all">Trigger Sync</button>
       <span id="healthDot" class="w-2 h-2 rounded-full bg-outline" title="checking…"></span>
-      <button class="material-symbols-outlined p-xs text-on-surface-variant hover:bg-surface-container-high rounded">notifications</button>
-      <div class="h-8 w-8 rounded-full bg-surface-container-highest border border-outline-variant flex items-center justify-center text-primary"><span class="material-symbols-outlined text-[20px]">person</span></div>
+      <button id="notifBtn" class="material-symbols-outlined p-xs text-on-surface-variant hover:bg-surface-container-high rounded">notifications</button>
+      <button id="avatarBtn" class="h-8 w-8 rounded-full bg-surface-container-highest border border-outline-variant flex items-center justify-center text-primary hover:brightness-110"><span class="material-symbols-outlined text-[20px]">person</span></button>
     </div>
   </header>
 
@@ -96,6 +98,16 @@ tailwind.config={darkMode:"class",theme:{extend:{
     <button onclick="hideApproval()" class="px-md py-sm border border-outline-variant text-on-surface-variant rounded text-label-md hover:bg-surface-variant">Reject</button>
     <button onclick="approve()" class="px-lg py-sm bg-primary-container text-on-primary-container font-bold rounded text-label-md hover:brightness-110 flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">check</span>Approve &amp; Run</button>
   </div>
+</div>
+
+<!-- Settings / Notifications modal -->
+<div id="modal" class="hidden fixed inset-0 z-[90] bg-black/60 flex items-center justify-center p-4" onclick="if(event.target===this)closeModal()">
+  <div id="modalBody" class="bg-surface-container border border-outline-variant rounded-xl max-w-lg w-full p-lg fade-in"></div>
+</div>
+
+<!-- Judge guided tour card -->
+<div id="tour" class="hidden fixed right-6 bottom-24 z-[95] w-[348px]">
+  <div id="tourCard" class="bg-surface-container-high border border-primary/50 rounded-xl shadow-2xl p-lg fade-in"></div>
 </div>
 
 <script src="/app.js"></script>

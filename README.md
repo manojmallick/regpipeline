@@ -72,7 +72,9 @@ gcloud run deploy regpipeline \
   --region=europe-west1 \
   --allow-unauthenticated \
   --set-secrets="FIVETRAN_API_KEY=regpipeline-ft-key:latest,FIVETRAN_API_SECRET=regpipeline-ft-secret:latest" \
-  --set-env-vars="GOOGLE_GENAI_USE_VERTEXAI=true,GEMINI_MODEL=gemini-3,BQ_DATASET=regulatory,FIVETRAN_USE_MCP=true"
+  --set-env-vars="GOOGLE_GENAI_USE_VERTEXAI=true,GEMINI_MODEL=gemini-2.5-flash,GOOGLE_CLOUD_PROJECT=<your-project>,GOOGLE_CLOUD_LOCATION=us-central1,BQ_DATASET=regulatory,FIVETRAN_USE_MCP=true"
+# Note: set GEMINI_MODEL=gemini-3 only where your Vertex project serves it; otherwise gemini-2.5-flash.
+# GOOGLE_CLOUD_PROJECT is required for the Vertex Gemini client on Cloud Run (BigQuery auto-detects it).
 
 # Daily 08:00 CET trigger
 gcloud scheduler jobs create http regpipeline-daily \
