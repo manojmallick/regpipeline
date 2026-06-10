@@ -1,5 +1,7 @@
 # RegPipeline — Daily Regulatory Monitoring Agent
 
+**▶️ Live app:** https://regpipeline-908307939543.us-central1.run.app · **Health:** [`/health`](https://regpipeline-908307939543.us-central1.run.app/health) · **Repo:** https://github.com/manojmallick/regpipeline
+
 Fivetran syncs 5 regulatory sources (EUR-Lex, EBA, ESMA, DNB, FIFA) into BigQuery →
 each morning RegPipeline checks connector health, reads the newly-synced documents,
 scores their compliance impact with Gemini 3, drafts a daily digest, and — **with your

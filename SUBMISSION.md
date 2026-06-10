@@ -10,13 +10,35 @@ Everything the judges' checklist needs, as copy-paste steps. Deadline: **June 11
 | Container builds + boots | ✅ Verified | `docker build` + boots in MOCK and MCP mode (MCP handshake green inside Linux image). |
 | Git repo + first commit | ✅ Done (local) | `main` branch, MIT `LICENSE` at root. **Push below.** |
 | New-project window | ✅ Provable | First commit dated within the contest window. |
-| Public repo (About shows license) | ⬜ You | Push + make public (below). |
-| Hosted URL | ⬜ You | Deploy to Cloud Run (below). |
+| Public repo (About shows license) | ✅ Done | https://github.com/manojmallick/regpipeline (MIT shown in About). |
+| Hosted URL | ✅ Live (interim demo) | https://regpipeline-908307939543.us-central1.run.app — flip to LIVE per "Upgrade to LIVE" below. |
 | Demo video < 3 min | ⬜ You | Record using `DEMO.md` script (shot list below). |
 | Agent Builder agent imported | ⬜ You | Import `agent-builder/agent.json` (below). |
 | Partner track | ✅ | Fivetran. |
 
-## 1. Push to a public GitHub repo
+## Upgrade the live URL from demo → LIVE (genuine runtime invocation)
+
+The hosted URL is up in demo mode. To make the **same URL** genuinely call Gemini + the Fivetran
+MCP + BigQuery at runtime (what the rules want), do this — only your Fivetran key/secret is missing:
+
+```bash
+# 1. Put your Fivetran creds in a local .env (NOT committed — .env is gitignored):
+#    FIVETRAN_API_KEY=...   FIVETRAN_API_SECRET=...
+# 2. Seed BigQuery so daily-run has documents to score:
+GOOGLE_CLOUD_PROJECT=gen-lang-client-0466757449 BQ_DATASET=regulatory BQ_LOCATION=us-central1 npm run seed:bq
+# 3. Redeploy the SAME service in LIVE mode (drops MOCK, adds Fivetran creds, real model):
+gcloud run deploy regpipeline --source . --region=us-central1 --allow-unauthenticated \
+  --project=gen-lang-client-0466757449 \
+  --update-secrets="FIVETRAN_API_KEY=regpipeline-ft-key:latest,FIVETRAN_API_SECRET=regpipeline-ft-secret:latest" \
+  --set-env-vars="FIVETRAN_USE_MCP=true,GOOGLE_GENAI_USE_VERTEXAI=true,GEMINI_MODEL=gemini-2.5-flash,GOOGLE_CLOUD_LOCATION=us-central1,BQ_DATASET=regulatory" \
+  --remove-env-vars=MOCK
+# 4. Verify the real stack:
+BASE=https://regpipeline-908307939543.us-central1.run.app npm run smoke
+```
+Note: this Google project serves **gemini-2.5-flash** on Vertex (gemini-3 returns 404 here). For real
+Gemini 3, supply a Gemini Developer API key and switch `src/agent.js` to the Developer API path.
+
+## 1. Push to a public GitHub repo  *(✅ already done — origin/main is public)*
 
 ```bash
 # create an EMPTY public repo on github.com first (no README), then:

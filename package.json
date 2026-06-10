@@ -13,7 +13,8 @@
     "start": "node src/server.js",
     "eval": "node scripts/eval.js",
     "smoke": "node scripts/smoke-live.mjs",
-    "mcp:selftest": "node scripts/mcp-selftest.mjs"
+    "mcp:selftest": "node scripts/mcp-selftest.mjs",
+    "seed:bq": "node scripts/seed-bq.mjs"
   },
   "dependencies": {
     "@getnao/fivetran-mcp-server": "^1.4.2",
