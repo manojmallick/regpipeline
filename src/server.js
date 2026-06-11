@@ -2,7 +2,7 @@
 // Designed to be triggered by Cloud Scheduler at 06:00 UTC (08:00 CET) — see README.
 
 import express from "express";
-import { dailyRun, executeProposed } from "./agent.js";
+import { dailyRun, executeProposed, MODEL, GEMINI_TRANSPORT } from "./agent.js";
 import { pingFivetran, fivetranTransport } from "./fivetran.js";
 import { pingBigQuery, getHistoricalIncidents, listTasks } from "./bigquery.js";
 import { THRESHOLDS_V1, THRESHOLDS_V2, diffThresholds, reclassify } from "./diff.js";
@@ -21,7 +21,8 @@ app.get("/health", async (_req, res) => {
     service: "regpipeline",
     version: "2.0.0",
     mode: process.env.MOCK === "true" ? "demo" : "live",
-    model: process.env.GEMINI_MODEL || "gemini-3",
+    model: MODEL,
+    gemini_transport: GEMINI_TRANSPORT, // "developer-api" (real Gemini 3) | "vertex" (gemini-2.5-flash)
     partner: "fivetran",
     partner_transport: transport,                  // how Fivetran is reached this run
     partner_connected: partnerOk,                  // reachable on whichever transport

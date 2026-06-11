@@ -25,13 +25,21 @@ function show(view){
 document.querySelectorAll("[data-nav]").forEach(b=>b.dataset.nav&&(b.onclick=()=>show(b.dataset.nav)));
 
 // ---------- daily run (Health + Impact source) ----------
+function loadingSkeleton(){
+  return `<div class="space-y-xl fade-in">
+    <div class="flex items-center gap-sm"><span class="material-symbols-outlined spin text-primary">progress_activity</span><span class="text-headline-sm text-on-surface-variant">Running the daily pipeline — Fivetran health · BigQuery docs · Gemini scoring…</span></div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-lg">${[0,1,2].map(()=>`<div class="glass-card p-lg rounded-xl h-32 animate-pulse bg-surface-container-high/40"></div>`).join("")}</div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-md">${[0,1,2,3].map(()=>`<div class="glass-card rounded-xl h-32 animate-pulse bg-surface-container-high/40"></div>`).join("")}</div>
+  </div>`;
+}
 async function runPipeline(){
   $("#refreshIcon").classList.add("spin");
+  if(!runData) $("#view-health").innerHTML=loadingSkeleton();
+  const ctrl=new AbortController(); const to=setTimeout(()=>ctrl.abort(),35000);
   try{
-    const r=await fetch("/api/daily-run"); const d=await r.json();
+    const r=await fetch("/api/daily-run",{signal:ctrl.signal}); const d=await r.json();
     if(d.error) throw new Error(d.error);
     runData=d; renderHealth(d);
-    if(diffData||true){} // impact uses /api/diff lazily
     pending={delayed:d.delayed,digest:d.digest,tasks:d.tasks};
     if(d.proposedAction){
       $("#apTitle").textContent="⚡ Agent proposes: "+d.proposedAction.description;
@@ -40,8 +48,11 @@ async function runPipeline(){
     }
     // refresh impact if currently shown
     if(!$("#view-impact").classList.contains("hidden")) loadDiff();
-  }catch(e){ $("#view-health").innerHTML=`<div class="glass-card p-lg rounded-xl text-error">Error: ${esc(e.message)}</div>`; }
-  finally{ $("#refreshIcon").classList.remove("spin"); }
+  }catch(e){
+    const msg=e.name==="AbortError"?"The pipeline run is taking longer than expected — the live stack is still warming up.":esc(e.message);
+    $("#view-health").innerHTML=`<div class="glass-card p-lg rounded-xl space-y-md fade-in"><div class="flex items-center gap-sm text-yellow-500"><span class="material-symbols-outlined">warning</span><span class="font-bold text-on-surface">Couldn’t complete the run</span></div><p class="text-on-surface-variant text-body-sm">${msg}</p><button onclick="runPipeline()" class="px-md py-sm bg-primary text-on-primary font-bold rounded text-label-md flex items-center gap-1 w-max"><span class="material-symbols-outlined text-[18px]">refresh</span>Retry</button></div>`;
+  }
+  finally{ clearTimeout(to); $("#refreshIcon").classList.remove("spin"); }
 }
 $("#refreshBtn").onclick=runPipeline;
 $("#triggerSyncBtn").onclick=runPipeline;
@@ -426,6 +437,9 @@ $("#tourBtn")&&($("#tourBtn").onclick=startTour);
 
 // ---------- boot ----------
 const start=(location.hash||"#health").slice(1);
-runPipeline().then(()=>show(["health","impact","history"].includes(start)?start:"health"));
+const startView=["health","impact","history"].includes(start)?start:"health";
+show(startView);                                   // paint shell + nav immediately
+$("#view-health").innerHTML=loadingSkeleton();     // instant feedback — never a blank screen
+runPipeline();
 // first-visit hint to launch the tour
-if(!location.hash) setTimeout(()=>{ if($("#tour").classList.contains("hidden")) toast("👋 New here? Click “Judge Tour” for a 60-second guided walkthrough."); },1200);
+if(!location.hash) setTimeout(()=>{ if($("#tour").classList.contains("hidden")) toast("👋 New here? Click “Judge Tour” for a 60-second guided walkthrough."); },1400);

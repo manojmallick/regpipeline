@@ -16,15 +16,17 @@ import { listConnectors } from "./fivetran.js";
 import { getNewDocuments, getHistoricalIncidents, recordTasks, recordAudit } from "./bigquery.js";
 import { THRESHOLDS_V1, THRESHOLDS_V2, diffThresholds, reclassify, changeToTasks } from "./diff.js";
 
-const MODEL = process.env.GEMINI_MODEL || "gemini-3";
 const REGQUERY_URL = process.env.REGQUERY_URL; // optional: push changed articles downstream
-// Vertex needs the project explicitly (Cloud Run does not inject GOOGLE_CLOUD_PROJECT the way
-// the BigQuery client auto-detects it from the metadata server).
-const ai = new GoogleGenAI({
-  vertexai: true,
-  project: process.env.GOOGLE_CLOUD_PROJECT,
-  location: process.env.GOOGLE_CLOUD_LOCATION || "us-central1",
-});
+
+// Gemini client — prefer the Developer API (real Gemini 3) when GEMINI_API_KEY is set; otherwise
+// fall back to Vertex (gemini-2.5-flash) via ADC. Both satisfy the "uses Gemini" requirement.
+// Cloud Run does not inject GOOGLE_CLOUD_PROJECT, so Vertex needs it passed explicitly.
+const USE_DEV_API = !!process.env.GEMINI_API_KEY;
+export const MODEL = process.env.GEMINI_MODEL || (USE_DEV_API ? "gemini-3" : "gemini-2.5-flash");
+export const GEMINI_TRANSPORT = USE_DEV_API ? "developer-api" : "vertex";
+const ai = USE_DEV_API
+  ? new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
+  : new GoogleGenAI({ vertexai: true, project: process.env.GOOGLE_CLOUD_PROJECT, location: process.env.GOOGLE_CLOUD_LOCATION || "us-central1" });
 
 /** Tolerant JSON extraction — strips ```json fences and grabs the outer {...} so a stray
  *  prefix/suffix from the model can't blank the digest. Returns null if unparseable. */
@@ -54,41 +56,50 @@ export async function dailyRun() {
   const t0 = Date.now();
   const steps = [];
 
-  const connectors = await listConnectors();
+  let connectors = [];
+  try { connectors = await listConnectors(); }
+  catch (e) { steps.push({ agent: "PipelineMonitor", action: `Fivetran unreachable: ${String(e.message || e).slice(0, 80)}`, ms: Date.now() - t0 }); }
   const delayed = connectors.filter((c) => c.failed || c.state === "paused");
   const schemaChanges = connectors.filter((c) => c.schema_change && c.schema_change !== "ready");
   steps.push({ agent: "PipelineMonitor", action: `${connectors.length} connectors · ${delayed.length} delayed · ${schemaChanges.length} schema changes`, ms: Date.now() - t0 });
 
   const lookback = Number(process.env.DIGEST_LOOKBACK_HOURS || 24);
-  const docs = await getNewDocuments(lookback);
+  let docs = [];
+  try { docs = await getNewDocuments(lookback); }
+  catch (e) { steps.push({ agent: "PipelineMonitor", action: `BigQuery unreachable: ${String(e.message || e).slice(0, 80)}`, ms: Date.now() - t0 }); }
   steps.push({ agent: "PipelineMonitor", action: `${docs.length} new regulatory documents (${lookback}h)`, ms: Date.now() - t0 });
 
   let digest = { items: [], summary: "No new regulatory documents." };
-  if (docs.length) {
+  if (docs.length) try {
     const res = await ai.models.generateContent({
       model: MODEL,
       config: {
         systemInstruction: DIGEST_SYSTEM,
         responseMimeType: "application/json",
         temperature: 0.2,
-        maxOutputTokens: 4096,
-        // gemini-2.5-flash "thinking" can consume the output budget and truncate JSON; disable it.
-        thinkingConfig: { thinkingBudget: 0 },
+        maxOutputTokens: 8192,
+        // gemini-2.5-flash "thinking" can eat the output budget and truncate JSON; disable it on
+        // the Vertex path. (Omitted for the Developer-API/Gemini-3 path, which manages it itself.)
+        ...(USE_DEV_API ? {} : { thinkingConfig: { thinkingBudget: 0 } }),
       },
       contents: `NEW DOCUMENTS:\n${JSON.stringify(docs, null, 2)}\n\nPIPELINE HEALTH:\n${JSON.stringify({ delayed, schemaChanges }, null, 2)}`,
     });
     const parsed = parseJsonLoose(res.text);
     digest = parsed && Array.isArray(parsed.items) ? parsed : { items: [], summary: String(res.text || "").slice(0, 400) || "Digest unavailable." };
     steps.push({ agent: "RegulatoryAnalyst", action: `${MODEL} scored impact + drafted digest`, ms: Date.now() - t0 });
+  } catch (e) {
+    steps.push({ agent: "RegulatoryAnalyst", action: `Gemini error: ${String(e.message || e).slice(0, 90)}`, ms: Date.now() - t0 });
   }
 
   // --- Retroactive re-classification when a threshold change is detected ---
   let reclassification = null;
-  if ((digest.items || []).some((i) => i.threshold_change)) {
+  if ((digest.items || []).some((i) => i.threshold_change)) try {
     const history = await getHistoricalIncidents();
     const changes = diffThresholds(THRESHOLDS_V1, THRESHOLDS_V2);
     reclassification = { changes, ...reclassify(history, THRESHOLDS_V1, THRESHOLDS_V2) };
     steps.push({ agent: "RegulatoryAnalyst", action: `re-classified ${reclassification.total} incidents → ${reclassification.changed} now MAJOR`, ms: Date.now() - t0 });
+  } catch (e) {
+    steps.push({ agent: "RegulatoryAnalyst", action: `reclassification skipped: ${String(e.message || e).slice(0, 80)}`, ms: Date.now() - t0 });
   }
 
   const tasks = changeToTasks(digest.items || []);
