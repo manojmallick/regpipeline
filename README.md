@@ -1,12 +1,26 @@
 # RegPipeline — Daily Regulatory Monitoring Agent
 
-**▶️ Live app:** https://regpipeline-908307939543.us-central1.run.app · **Health:** [`/health`](https://regpipeline-908307939543.us-central1.run.app/health) · **Repo:** https://github.com/manojmallick/regpipeline
+[![Live Demo](https://img.shields.io/badge/▶_Live_Demo-Cloud_Run-0073e6?logo=googlecloud&logoColor=white)](https://regpipeline-908307939543.us-central1.run.app)
+[![License: MIT](https://img.shields.io/badge/License-MIT-success.svg)](LICENSE)
+[![Gemini](https://img.shields.io/badge/Gemini-2.5_flash_/_3-8E75FF?logo=googlegemini&logoColor=white)](src/agent.js)
+[![Fivetran MCP](https://img.shields.io/badge/Fivetran-MCP_server-1A73E8?logo=fivetran&logoColor=white)](src/fivetran-mcp.js)
+[![Agent Builder](https://img.shields.io/badge/Vertex_AI-Agent_Builder-34A853?logo=googlecloud&logoColor=white)](agent-builder/agent.json)
+[![BigQuery](https://img.shields.io/badge/BigQuery-warehouse-4285F4?logo=googlebigquery&logoColor=white)](src/bigquery.js)
+[![Node](https://img.shields.io/badge/Node-%E2%89%A520-339933?logo=nodedotjs&logoColor=white)](package.json)
+[![Live stack: 10/10](https://img.shields.io/badge/live_stack_smoke-10%2F10-success)](evals/live-proof.json)
+[![DORA eval: 7/7](https://img.shields.io/badge/DORA_reclassify_eval-7%2F7-success)](evals/report.json)
+
+**▶️ Live app:** https://regpipeline-908307939543.us-central1.run.app  ·  **Health JSON:** [`/health`](https://regpipeline-908307939543.us-central1.run.app/health)  ·  **Repo:** https://github.com/manojmallick/regpipeline
+
+> 🧭 **Judges:** open the live app and click **“Judge Tour”** (top-right) for a 60-second guided walkthrough.
 
 Fivetran syncs 5 regulatory sources (EUR-Lex, EBA, ESMA, DNB, FIFA) into BigQuery →
 each morning RegPipeline checks connector health, reads the newly-synced documents,
-scores their compliance impact with Gemini 3, drafts a daily digest, and — **with your
+scores their compliance impact with Gemini, drafts a daily digest, and — **with your
 approval** — resyncs any delayed connectors and sends the digest. Zero manual monitoring
 hours; new regulations surfaced within 6h instead of days.
+
+![RegPipeline — architecture](architecture.png)
 
 ![RegPipeline demo — Health → Run Now → Approve → Impact → History](docs/demo.gif)
 
@@ -101,6 +115,18 @@ a timestamped `evals/live-proof.json` you can attach to the submission:
 npm run smoke                              # against http://localhost:8080
 BASE=https://<cloud-run-url> npm run smoke # against Cloud Run
 ```
+
+## Project docs
+| Doc | What |
+|---|---|
+| [ARCHITECTURE.md](ARCHITECTURE.md) | Components, request flow, the MCP runtime path, deployment (+ `architecture.png`) |
+| [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) | Color, type, spacing, components, motion |
+| [DECK.pdf](DECK.pdf) · [DECK.md](DECK.md) | 8-slide pitch deck |
+| [DEVPOST.md](DEVPOST.md) | Paste-ready Devpost submission copy |
+| [VIDEO_SCRIPT.md](VIDEO_SCRIPT.md) | Word-for-word 3-min demo narration |
+| [SCREENSHOTS.md](SCREENSHOTS.md) | Gallery plan + captions (`screenshots/`) |
+| [SUBMISSION.md](SUBMISSION.md) | Checklist runbook |
+| [DEMO.md](DEMO.md) | Live demo script + impact math |
 
 ## License
 MIT — see [LICENSE](LICENSE).

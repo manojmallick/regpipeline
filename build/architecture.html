@@ -1,0 +1,90 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=JetBrains+Mono&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',sans-serif}
+  body{width:1440px;height:660px;background:radial-gradient(1200px 600px at 70% -10%,rgba(0,115,230,.10),transparent),#080C14;color:#dbe2f9;padding:44px 52px;position:relative}
+  .title{font-size:30px;font-weight:900;letter-spacing:-.02em}
+  .title .b{color:#56a8ff}
+  .sub{color:#8fa0bf;font-size:15px;margin-top:4px;font-weight:600}
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px;border:1px solid #1C2C42;background:#101828;color:#abc7ff}
+  .row{display:flex;align-items:stretch;gap:26px;margin-top:30px}
+  .col{display:flex;flex-direction:column;gap:16px}
+  .card{background:#101828;border:1px solid #1C2C42;border-radius:14px;padding:16px 18px}
+  .card h3{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:#7f8ea8;margin-bottom:10px;font-weight:800}
+  .node{display:flex;align-items:center;gap:12px;background:#0d1626;border:1px solid #20324b;border-radius:11px;padding:12px 14px}
+  .node .ic{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;background:rgba(0,115,230,.14);border:1px solid rgba(0,115,230,.3)}
+  .node .t{font-weight:800;font-size:15px}
+  .node .d{color:#8fa0bf;font-size:12.5px;margin-top:1px}
+  .agent{background:linear-gradient(180deg,#0e1a2e,#0c1424);border:1px solid #1f4f86;border-radius:16px;padding:18px;width:520px;box-shadow:0 0 40px rgba(0,115,230,.12)}
+  .agent .hd{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+  .agent .hd .nm{font-size:18px;font-weight:900}
+  .agent .hd .rn{margin-left:auto;font-size:11px;color:#56a8ff;font-weight:800;border:1px solid #1f4f86;padding:3px 9px;border-radius:999px;background:rgba(0,115,230,.08)}
+  .step{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px dashed #1b2c44}
+  .step:last-child{border-bottom:0}
+  .step .n{width:24px;height:24px;border-radius:7px;background:#0073e6;color:#fff;font-weight:900;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .step .lbl{font-weight:700;font-size:14px}
+  .step .tag{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:11px;color:#9fb4d6;background:#0a1322;border:1px solid #1b2c44;padding:2px 8px;border-radius:6px}
+  .arrow{align-self:center;color:#3f5374;font-size:30px;font-weight:900}
+  .gate{margin-top:24px;display:flex;align-items:center;gap:14px;background:rgba(0,115,230,.06);border:1px solid #1f4f86;border-radius:14px;padding:14px 18px}
+  .gate .k{font-size:22px}
+  .gate b{color:#abc7ff}
+  .foot{position:absolute;left:52px;right:52px;bottom:26px;display:flex;justify-content:space-between;color:#6c7c97;font-size:12.5px;font-weight:600}
+  .mono{font-family:'JetBrains Mono',monospace}
+</style></head>
+<body>
+  <div style="display:flex;align-items:flex-end;justify-content:space-between">
+    <div>
+      <div class="title">Reg<span class="b">Pipeline</span> — architecture</div>
+      <div class="sub">Daily regulatory-monitoring agent · Gemini + Agent Builder + the real Fivetran MCP + BigQuery</div>
+    </div>
+    <div style="display:flex;gap:8px"><span class="pill">▶ Cloud Run</span><span class="pill">human-in-the-loop</span><span class="pill">eval 7/7</span></div>
+  </div>
+
+  <div class="row">
+    <!-- triggers -->
+    <div class="col" style="width:250px;justify-content:center">
+      <div class="card">
+        <h3>Triggers</h3>
+        <div class="node"><div class="ic">⏰</div><div><div class="t">Cloud Scheduler</div><div class="d">daily 06:00 UTC → /api/daily-run</div></div></div>
+        <div style="height:12px"></div>
+        <div class="node"><div class="ic">🧑‍⚖️</div><div><div class="t">Judge / Analyst</div><div class="d">browser UI · Judge Tour</div></div></div>
+      </div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- agent -->
+    <div class="agent">
+      <div class="hd"><div class="ic" style="width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;background:rgba(0,115,230,.18);border:1px solid #1f4f86">🤖</div><div class="nm">RegPipeline agent</div><div class="rn">src/agent.js · gemini-2.5-flash / 3</div></div>
+      <div class="step"><div class="n">1</div><div class="lbl">Monitor connector health</div><div class="tag">Fivetran MCP</div></div>
+      <div class="step"><div class="n">2</div><div class="lbl">Read new documents (24h)</div><div class="tag">BigQuery</div></div>
+      <div class="step"><div class="n">3</div><div class="lbl">Score compliance impact</div><div class="tag">Gemini</div></div>
+      <div class="step"><div class="n">4</div><div class="lbl">Retroactive re-classification</div><div class="tag">diff.js · 7/7</div></div>
+      <div class="step"><div class="n">5</div><div class="lbl">Propose actions — wait for human</div><div class="tag">gated</div></div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- services -->
+    <div class="col" style="flex:1;justify-content:center">
+      <div class="card">
+        <h3>Google Cloud + partner</h3>
+        <div class="node"><div class="ic">🔗</div><div><div class="t">Fivetran MCP server</div><div class="d mono">@getnao/fivetran-mcp-server → Fivetran API</div></div></div>
+        <div style="height:12px"></div>
+        <div class="node"><div class="ic">🗄️</div><div><div class="t">BigQuery</div><div class="d mono">regulatory.{eurlex,eba,esma,dnb,fifa}</div></div></div>
+        <div style="height:12px"></div>
+        <div class="node"><div class="ic">🧠</div><div><div class="t">Gemini</div><div class="d mono">Vertex · or Developer API (Gemini 3)</div></div></div>
+        <div style="height:12px"></div>
+        <div class="node"><div class="ic">🏗️</div><div><div class="t">Agent Builder</div><div class="d mono">agent-builder/agent.json (same MCP)</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="gate">
+    <div class="k">✅</div>
+    <div style="font-size:14.5px;line-height:1.5"><b>Human approves</b> → <span class="mono" style="color:#9fb4d6">POST /api/execute</span> → Fivetran <span class="mono">modify_connection_state</span> (resync) · send digest · write BigQuery audit log.
+    &nbsp;Nothing consequential runs without a person in the loop.</div>
+  </div>
+
+  <div class="foot"><span>github.com/manojmallick/regpipeline · MIT</span><span>Google Cloud Rapid Agent Hackathon — Fivetran track</span></div>
+</body></html>

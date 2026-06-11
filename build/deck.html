@@ -1,0 +1,111 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=JetBrains+Mono&display=swap" rel="stylesheet">
+<style>
+  @page{size:13.33in 7.5in;margin:0}
+  *{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .slide{width:13.33in;height:7.5in;background:radial-gradient(1100px 560px at 78% -12%,rgba(0,115,230,.12),transparent),#080C14;color:#dbe2f9;padding:0.7in 0.85in;page-break-after:always;position:relative;overflow:hidden;display:flex;flex-direction:column}
+  .kicker{font-size:13px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#56a8ff}
+  h1{font-size:62px;font-weight:900;letter-spacing:-.03em;line-height:1.02;margin:14px 0}
+  h1 .b{color:#56a8ff}
+  h2{font-size:40px;font-weight:900;letter-spacing:-.02em;margin:6px 0 22px}
+  .lead{font-size:21px;color:#aebbd6;font-weight:600;line-height:1.5;max-width:10.5in}
+  ul{list-style:none;margin-top:6px}
+  li{font-size:20px;line-height:1.65;color:#cdd6ea;padding-left:30px;position:relative;margin-bottom:6px}
+  li:before{content:"▸";position:absolute;left:0;color:#0073e6;font-weight:900}
+  li b{color:#fff}
+  .mono{font-family:'JetBrains Mono',monospace;color:#9fb4d6}
+  .big{font-size:30px;font-weight:800;color:#fff;line-height:1.35}
+  .chips{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+  .chip{font-size:14px;font-weight:700;padding:7px 14px;border-radius:999px;border:1px solid #1f4f86;background:#101828;color:#abc7ff}
+  .num{position:absolute;top:0.55in;right:0.85in;font-size:14px;color:#5c6e8c;font-weight:800}
+  .foot{position:absolute;bottom:0.5in;left:0.85in;right:0.85in;display:flex;justify-content:space-between;font-size:13px;color:#5c6e8c;font-weight:600}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px 34px;margin-top:8px}
+  .center{justify-content:center}
+  .stat{font-size:54px;font-weight:900;color:#56a8ff;letter-spacing:-.02em}
+  .card{background:#101828;border:1px solid #1C2C42;border-radius:14px;padding:16px 20px}
+</style></head>
+<body>
+
+<section class="slide center">
+  <div class="kicker">Google Cloud Rapid Agent Hackathon · Fivetran track</div>
+  <h1>Reg<span class="b">Pipeline</span></h1>
+  <div class="lead">An autonomous compliance analyst for EU finance.<br>Gemini + Google Cloud Agent Builder + the <b style="color:#fff">real Fivetran MCP server</b> + BigQuery.</div>
+  <div class="chips"><span class="chip">▶ Live on Cloud Run</span><span class="chip">human-in-the-loop</span><span class="chip">eval 7/7 · smoke 10/10</span></div>
+  <div class="foot"><span>regpipeline-908307939543.us-central1.run.app</span><span>github.com/manojmallick/regpipeline · MIT</span></div>
+</section>
+
+<section class="slide">
+  <div class="num">02</div><div class="kicker">The problem</div><h2>Compliance teams are drowning</h2>
+  <ul>
+    <li>EU firms must track <b>DORA, NIS2, GDPR, the EU AI Act</b> — constantly.</li>
+    <li>An analyst spends <b>~1.5 hours every day</b> scanning regulatory bulletins.</li>
+    <li>The dangerous moment is a <b>threshold change</b> — a delegated act quietly redefines a "major incident."</li>
+    <li>Miss it, and <b>last quarter's incident filings are now wrong.</b> Fines run to the millions.</li>
+  </ul>
+  <div class="foot"><span>RegPipeline</span><span></span></div>
+</section>
+
+<section class="slide">
+  <div class="num">03</div><div class="kicker">The solution</div><h2>An agent that watches every morning</h2>
+  <ul>
+    <li>1 — Checks Fivetran connector health & schema changes <span class="mono">via the Fivetran MCP</span></li>
+    <li>2 — Reads newly-synced regulatory docs from <span class="mono">BigQuery</span></li>
+    <li>3 — Scores each one's compliance impact with <b>Gemini</b> (article · action · deadline)</li>
+    <li>4 — <b>Retroactively re-classifies</b> your incident history when a threshold moves</li>
+    <li>5 — Proposes the fix — and <b>waits for a human to approve</b></li>
+  </ul>
+  <div class="foot"><span>RegPipeline</span><span></span></div>
+</section>
+
+<section class="slide center">
+  <div class="num">04</div><div class="kicker">The differentiator</div>
+  <div class="big">It doesn't summarize the news —<br>it tells you <span style="color:#56a8ff">which of your past filings just became wrong.</span></div>
+  <div class="lead" style="margin-top:22px">When DORA tightens <span class="mono">10%→8% / 2.0h→1.5h</span>, a deterministic, <b style="color:#fff">eval-tested (7/7)</b> engine re-runs every historical incident and returns the exact list that now counts as MAJOR.</div>
+  <div class="chips"><span class="chip">newsletter ✗</span><span class="chip">insurance policy against a fine ✓</span></div>
+  <div class="foot"><span>RegPipeline</span><span>src/diff.js · evals/report.json</span></div>
+</section>
+
+<section class="slide">
+  <div class="num">05</div><div class="kicker">Required tech — invoked at runtime</div><h2>Real, not just named</h2>
+  <div class="grid2">
+    <div class="card"><b style="font-size:19px">🧠 Gemini</b><div class="lead" style="font-size:16px;margin-top:6px">Scores impact as strict JSON · <span class="mono">src/agent.js</span></div></div>
+    <div class="card"><b style="font-size:19px">🏗️ Agent Builder</b><div class="lead" style="font-size:16px;margin-top:6px">Judged agent · <span class="mono">agent-builder/agent.json</span></div></div>
+    <div class="card"><b style="font-size:19px">🔗 Fivetran MCP</b><div class="lead" style="font-size:16px;margin-top:6px">Real <span class="mono">@getnao/fivetran-mcp-server</span>, spawned at runtime · <span class="mono">mcp:selftest</span></div></div>
+    <div class="card"><b style="font-size:19px">🗄️ BigQuery</b><div class="lead" style="font-size:16px;margin-top:6px">The warehouse Fivetran syncs into · <span class="mono">src/bigquery.js</span></div></div>
+  </div>
+  <div class="lead" style="margin-top:18px;font-size:17px">No competing AI or cloud — Google + Fivetran only.</div>
+  <div class="foot"><span>RegPipeline</span><span></span></div>
+</section>
+
+<section class="slide">
+  <div class="num">06</div><div class="kicker">Proof it's real</div><h2>Not a slideware demo</h2>
+  <ul>
+    <li>✅ Live hosted URL with real data — <span class="mono">npm run smoke</span> → <b>10/10</b></li>
+    <li>✅ <span class="mono">/health</span>: <span class="mono">partner_mcp_connected:true</span> only after a genuine MCP handshake</li>
+    <li>✅ Deterministic reclassification eval — <b>7/7</b>, including boundary cases</li>
+    <li>✅ Public · MIT · container builds & boots (verified in the Linux image)</li>
+    <li>✅ Human-approval gate — <span class="mono">POST /api/execute</span> returns 403 without consent</li>
+  </ul>
+  <div class="foot"><span>RegPipeline</span><span>evals/live-proof.json</span></div>
+</section>
+
+<section class="slide center">
+  <div class="num">07</div><div class="kicker">Impact</div>
+  <div style="display:flex;gap:60px;margin:10px 0 18px">
+    <div><div class="stat">~333 h</div><div class="lead" style="font-size:16px">analyst-hours saved / yr / entity</div></div>
+    <div><div class="stat">~€23k</div><div class="lead" style="font-size:16px">recovered capacity / yr</div></div>
+    <div><div class="stat">~6 h</div><div class="lead" style="font-size:16px">to surface a new reg (was days)</div></div>
+  </div>
+  <div class="lead">And the real prize: instant, defensible proof of <b style="color:#fff">which incidents you mis-reported</b> the moment a threshold moves.</div>
+  <div class="foot"><span>RegPipeline</span><span>illustrative figures with stated assumptions</span></div>
+</section>
+
+<section class="slide center">
+  <div class="num">08</div><div class="kicker">Try it</div>
+  <h1 style="font-size:46px">Open the live app →<br><span class="b">click “Judge Tour”</span></h1>
+  <div class="lead" style="margin-top:14px">A 60-second guided walkthrough: Health → Run → Approve → Impact → History.</div>
+  <div class="chips"><span class="chip">regpipeline-908307939543.us-central1.run.app</span><span class="chip">github.com/manojmallick/regpipeline</span></div>
+  <div class="foot"><span>RegPipeline · Gemini + Agent Builder + Fivetran MCP + BigQuery</span><span>MIT</span></div>
+</section>
+
+</body></html>
