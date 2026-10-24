@@ -79,6 +79,26 @@ gcloud auth application-default login && gcloud config set project "$GOOGLE_CLOU
 npm run dev              # http://localhost:8080 → click "Run Now"
 ```
 
+Also read from the environment:
+
+| Var | Notes |
+|---|---|
+| `DIGEST_LOOKBACK_HOURS` | Window for "new regulations" in the daily digest, default `24` |
+| `FIVETRAN_BASE_64_API_KEY` | Optional. Base64 of `key:secret`; if unset it is derived from `FIVETRAN_API_KEY` and `FIVETRAN_API_SECRET` |
+| `PORT`, `NODE_ENV` | Server port and environment |
+
+### Scripts
+
+| Command | What it does |
+|---|---|
+| `npm run dev` | Server with `--watch` |
+| `npm run demo` | Demo mode: `MOCK=true`, no credentials |
+| `npm start` | Server |
+| `npm run eval` | Run the evaluation set |
+| `npm run smoke` | Live smoke test against the deployed services |
+| `npm run mcp:selftest` | Self-test of the MCP connection |
+| `npm run seed:bq` | Seed BigQuery with the sample data |
+
 ## Deploy to Cloud Run + daily schedule
 ```bash
 gcloud run deploy regpipeline \
